@@ -89,6 +89,8 @@ module main #(
 	
 	output wire        							  i2c_sda,
 	output wire        							  i2c_scl,
+	output wire										  myi2c_sda,
+	output wire                              myi2c_scl,
 	output wire        							  hi_muxsel,
 	
 	output wire [7:0]  							  led,
@@ -721,6 +723,22 @@ module main #(
 	// 8-LED Display on Opal Kelly board
 	assign led = ~{ led_in };
 	
+	// i2c dummy
+		wire i2c_reset;
+	wire i2c_ena;
+	wire [6:0] i2c_addr;
+	wire i2c_rw;
+	wire [7:0] i2c_data_wr;
+	wire [7:0] i2c_data_rd;
+	wire i2c_busy;
+	
+	assign i2c_reset = 1'b0;
+	assign i2c_ena = 1'b1;
+	assign i2c_rw = 1'b0; //wr
+	assign i2c_addr = 7'h55; // i2c hex address 55
+	assign i2c_data_wr = 8'hAB;
+	
+	
 	
 	// Variable frequency data clock generator
 	
@@ -740,8 +758,23 @@ module main #(
 		.DCM_prog_done		(DCM_prog_done),
 		.locked				(dataclk_locked)
 		);
-
-
+		
+	// i2c module
+	btzk_i2c btzk_i2c_inst
+		(
+		.btzk_i2c_clk (clk1),
+		.btzk_i2c_reset_n (i2c_reset),
+		.btzk_i2c_ena (i2c_ena),
+		.btzk_i2c_addr (i2c_addr),
+		.btzk_i2c_rw (i2c_rw),
+		.btzk_i2c_data_wr (i2c_data_wr),
+		.btzk_i2c_data_rd (i2c_data_rd),
+		.btzk_i2c_ack_err (i2c_ack_err),
+		.btzk_i2c_busy (i2c_busy),
+		.btzk_i2c_scl (myi2c_scl),
+		.btzk_i2c_sda (myi2c_sda)
+		);
+		
 	// SDRAM FIFO that regulates data flow from Xilinx FPGA to USB interface
 	
 	SDRAM_FIFO  #(
@@ -2946,6 +2979,9 @@ module command_selector (
 			default: MOSI_cmd <= 16'b0;
 			endcase
 	end	
+	
+	// send dummy i2c commands
+	
 	
 endmodule
 
