@@ -747,6 +747,20 @@ module main #(
 	assign ep3ewireout = 				{16'b0, BOARD_ID};
 	assign ep3fwireout = 				{16'b0, BOARD_VERSION};
 	
+	// i2c dummy
+	wire i2c_reset;
+	wire i2c_ena;
+	wire [6:0] i2c_addr;
+	wire i2c_rw;
+	wire [7:0] i2c_data_wr;
+	wire [7:0] i2c_data_rd;
+	wire i2c_busy;
+	
+	assign i2c_reset = 1'b0;
+	assign i2c_ena = 1'b1;
+	assign i2c_rw = 1'b0; //wr
+	assign i2c_addr = 7'h55; // i2c hex address 55
+	assign i2c_data_wr = 8'hAB;
 	
 	// Open-ephys board status LEDs
 	//assign LED_OUT = 				1'b0; // use to set to 0
@@ -768,6 +782,22 @@ module main #(
     //.led8({DAC_register_1,DAC_register_2,8'b00000000}) //Aout
 	 .led8({SPI_running ?  {DAC_register_1,DAC_register_2,8'b00000000} : {8'b10000010,8'b10000010,8'b10000010}})
 	);
+	
+		// i2c module
+	btzk_i2c btzk_i2c_inst
+		(
+		.btzk_i2c_clk (clk1),
+		.btzk_i2c_reset_n (i2c_reset),
+		.btzk_i2c_ena (i2c_ena),
+		.btzk_i2c_addr (i2c_addr),
+		.btzk_i2c_rw (i2c_rw),
+		.btzk_i2c_data_wr (i2c_data_wr),
+		.btzk_i2c_data_rd (i2c_data_rd),
+		.btzk_i2c_ack_err (i2c_ack_err),
+		.btzk_i2c_busy (i2c_busy),
+		.btzk_i2c_scl (myi2c_scl),
+		.btzk_i2c_sda (myi2c_sda)
+		);
 	
 	// Open-ephys clock divider
 	freqdiv sample_clock_div(
