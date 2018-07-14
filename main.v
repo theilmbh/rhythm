@@ -758,11 +758,12 @@ module main #(
 	wire [7:0] i2c_data_rd;
 	wire i2c_busy;
 	
-	assign i2c_reset = 1'b0;
+	assign i2c_reset = 1'b1;
 	assign i2c_ena = 1'b1;
 	assign i2c_rw = 1'b0; //wr
 	assign i2c_addr = 7'h55; // i2c hex address 55
 	assign i2c_data_wr = 8'hAB;
+	assign i2c_data_rd = 8'bz;
 	
 	// Open-ephys board status LEDs
 	//assign LED_OUT = 				1'b0; // use to set to 0
