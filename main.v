@@ -160,6 +160,8 @@ module main #(
 	output wire                              MOSI_D_p,
 	output wire                              MOSI_D_n,
 	
+	output wire											myi2c_scl,
+	output wire											myi2c_sda,
 	//debug signals. Disabled by default
 	//output                               CS_b,
 	//output                               SCLK,
