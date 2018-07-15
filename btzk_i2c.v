@@ -34,25 +34,7 @@ module btzk_i2c #(
     inout btzk_i2c_scl,
     inout btzk_i2c_sda
     );
-
-	integer divider = (INPUT_CLK / BUS_CLK) / 4; // Number of system clocks in 1/4 of an scl clock
-	integer state;
-	
-	reg stretch;
-	reg [32:0] count;
-	reg data_clk;
-	reg scl_clk;
-	reg scl_ena;
-	reg sda_int;
-	reg sda_ena_n;
-	reg [7:0] addr_rw;
-	reg [7:0] data_tx;
-	reg [7:0] data_rx;
-	reg bit_cnt;
-	reg data_clk_prev;
-
-
-	localparam
+		localparam
 		ready = 100,
 		start = 101,
 		command = 102,
@@ -62,6 +44,25 @@ module btzk_i2c #(
 		slv_ack2	= 106,
 		mstr_ack = 107,
 		stop		= 108;
+	integer divider = (INPUT_CLK / BUS_CLK) / 4; // Number of system clocks in 1/4 of an scl clock
+	reg [7:0] state = ready;
+	
+	reg stretch;
+	reg [32:0] count;
+	reg data_clk;
+	reg scl_clk;
+	reg scl_ena = 0;
+	reg sda_int = 1;
+	reg sda_ena_n;
+	reg [7:0] addr_rw;
+	reg [7:0] data_tx;
+	reg [7:0] data_rx;
+	reg bit_cnt = 7;
+	reg data_clk_prev;
+
+	
+
+
 	
 	// generate scl and data clk timings
 	always@(posedge btzk_i2c_clk) begin
@@ -97,6 +98,7 @@ module btzk_i2c #(
 		end
 		
 		if ((data_clk == 1) && (data_clk_prev == 0)) begin
+			$display("Starting state machine");
 			case (state)
 				ready: begin
 					if (btzk_i2c_ena) begin
@@ -241,15 +243,17 @@ module btzk_i2c #(
 
 	always @(*) begin
 		if (state == start) begin
-			sda_ena_n = data_clk_prev;
+			sda_ena_n <= data_clk_prev;
 		end else if (state == stop) begin
-			sda_ena_n = ~data_clk_prev;
+			sda_ena_n <= ~data_clk_prev;
 		end else begin
-			sda_ena_n = sda_int;
+			sda_ena_n <= sda_int;
 		end
 	end
 	
 	assign btzk_i2c_scl = (scl_ena == 1 && scl_clk == 0) ? 1'b0 : 1'bz;
+	//assign btzk_i2c_scl = scl_clk;
 	assign btzk_i2c_sda = (sda_ena_n == 0) ? 1'b0 : 1'bz;
+	//assign btzk_i2c_sda = sda_ena_n;
 
 endmodule
